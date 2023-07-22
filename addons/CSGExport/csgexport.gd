@@ -27,7 +27,7 @@ func _selectionchanged():
 	var selected = get_editor_interface().get_selection().get_selected_nodes()
 	if selected.size() == 1:
 		
-		if selected[0] is CSGCombiner:
+		if (selected[0] is CSGCombiner or selected[0] is MeshInstance):
 			object_name= selected[0].name
 			obj = selected[0]
 			button_csg.visible = true
@@ -43,13 +43,22 @@ func handles(obj):
 
 
 func _on_csg_pressed():
-	exportcsg()
-	
+	# print(obj)
+	if (obj.is_class("CSGShape")): exportcsg()
+	if (obj.is_class("MeshInstance")): exportmeshinst()
+
 func exportcsg():
+	var csgMesh = obj.get_meshes()
+	exportmesh( csgMesh )
+
+func exportmeshinst():
+	var instMesh = obj.mesh
+	exportmesh( instMesh )
+
+func exportmesh( export_mesh: Mesh ):
 	#Variables
 	objcont = "" #.obj content
 	matcont = "" #.mat content
-	var csgMesh= obj.get_meshes();
 	var vertcount=0
 	
 	#OBJ Headers
@@ -61,12 +70,13 @@ func exportcsg():
 	blank_material.resource_name = "BlankMaterial"
 	
 	#Get surfaces and mesh info
-	for t in range(csgMesh[-1].get_surface_count()):
-		var surface = csgMesh[-1].surface_get_arrays(t)
+	for t in range(export_mesh.get_surface_count()):
+		var surface = export_mesh.surface_get_arrays(t)
+		print(surface)
 		var verts = surface[0]
 		var UVs = surface[4]
 		var normals = surface[1]
-		var mat:SpatialMaterial = csgMesh[-1].surface_get_material(t)
+		var mat:SpatialMaterial = export_mesh.surface_get_material(t)
 		var faces = []
 		
 		#create_faces_from_verts (Triangles)
@@ -87,8 +97,9 @@ func exportcsg():
 		#add UVs
 		for uv in UVs:
 			objcont+=str("vt ",uv[0],' ',uv[1])+"\n"
-		for norm in normals:
-			objcont+=str("vn ",norm[0],' ',norm[1],' ',norm[2])+"\n"
+		if (normals != null):
+			for norm in normals:
+				objcont+=str("vn ",norm[0],' ',norm[1],' ',norm[2])+"\n"
 		
 		#add groups and materials
 		objcont+="g surface"+str(t)+"\n"
