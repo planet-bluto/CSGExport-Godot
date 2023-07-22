@@ -2,7 +2,8 @@
 CSG Export Plugin for GodotEngine
 =================================
 Export CSG Meshes with 1 click 
-This for adds support for the MeshInstance node aswell
+
+This fork adds support for the MeshInstance nodes as well
 
 How to use :
 - Combine all your CSGMeshes under a CSGCombiner node then press (Export to OBJ) in the Spatial Container Menu.
